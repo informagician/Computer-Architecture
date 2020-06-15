@@ -9,9 +9,12 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.register = [0] * 8
-        self.register[7] = 0xF4
+        self.register[7] = 0xF4 # SP Stack Pointer
+        # self.register[6] =  # IS Interrupt Status
+        # self.register[5] =  # IM Interrupt Mask
         self.pc = 0
         self.fl = 0
+        self.status = False
 
     def load(self):
         """Load a program into memory."""
@@ -66,11 +69,16 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        self.status = True
+        while self.status == True:
+
+            ir = self.ram_read(self.pc) # setting the instruction register to begin from the first memory
+            opa = self.ram_read(self.pc + 1)
+            opb = self.ram_read(self.pc + 2)
     
 
     def ram_read(self,address):
-        self.content = self.ram[address]
+        self.content = self.ram[address] # Memory Data Register (MDR) = Memory Address Register (MAR)
         return self.content
 
 
@@ -78,3 +86,11 @@ class CPU:
     def ram_write(self,address,data):
         self.ram[address] = data
         self.ram_read(address)
+
+
+    def HLT(self):
+        self.status = False
+
+    def LDI(self, a, b):
+        self.register[a] = b
+        self.pc += 3
