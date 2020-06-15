@@ -94,3 +94,8 @@ class CPU:
     def LDI(self, a, b):
         self.register[a] = b
         self.pc += 3
+
+    def PRN(self,a,b):
+        value = register[a]
+        print(int(value,10))
+        self.pc += 2
