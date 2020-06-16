@@ -16,6 +16,13 @@ class CPU:
         self.fl = 0
         self.status = False
 
+        self.func_dict = {
+            1: self.HLT,
+            130: self.LDI,
+            71: self.PRN,
+            162: self.MUL # 10100010
+        }
+
     def load(self):
         """Load a program into memory."""
 
@@ -91,7 +98,8 @@ class CPU:
             ir = self.ram_read(self.pc) # setting the instruction register to begin from the first memory
             opa = self.ram_read(self.pc + 1)
             opb = self.ram_read(self.pc + 2)
-    
+
+            self.func_dict[ir](opa,opb=None)
 
     def ram_read(self,address):
         self.content = self.ram[address] # Memory Data Register (MDR) = Memory Address Register (MAR)
@@ -105,13 +113,20 @@ class CPU:
 
 
     def HLT(self):
+        print('GoodBye')
         self.status = False
 
     def LDI(self, a, b):
         self.register[a] = b
+        print(f'LDI - register {a} is {b}')
         self.pc += 3
 
     def PRN(self,a,b):
         value = register[a]
         print(int(value,10))
+        self.pc += 2
+
+    def MUL(self,a,b):
+        value = a * b
+        print(f'MUL = {value}')
         self.pc += 2
