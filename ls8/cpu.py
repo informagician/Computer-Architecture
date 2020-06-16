@@ -21,6 +21,22 @@ class CPU:
 
         address = 0
 
+        try:
+            filename = sys.argv[1]
+            with open(filename) as f:
+                for address,line in enumerate(f):
+                    line = line.split('#')
+                    line = line[0].strip()
+
+                    if line == "":
+                        continue
+
+                    v = int(line, 2)
+                    self.ram_write(address,v)
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: could not find {sys.argv[1]}")
+            sys.exit(2)
+
         # For now, we've just hardcoded a program:
 
         # program = [
@@ -32,18 +48,6 @@ class CPU:
         #     0b00000000,
         #     0b00000001, # HLT
         # ]
-        filename = sys.argv[1]
-
-        with open(filename) as f:
-            for address,line in enumerate(f):
-                line = line.split('#')
-
-                try:
-                    v = int(line[0], 2)
-                except ValueError:
-                    continue
-                ram[address] = v
-
 
         # for instruction in program:
         #     self.ram[address] = instruction
