@@ -9,7 +9,8 @@ class CPU:
         """Construct a new CPU."""
         self.ram = [0] * 256
         self.register = [0] * 8
-        self.register[7] = 0xF4 # SP Stack Pointer
+        self.sp = 7 # SP Stack Pointer
+        # self.register[sp] = 0x4F
         # self.register[6] =  # IS Interrupt Status
         # self.register[5] =  # IM Interrupt Mask
         self.pc = 0
@@ -20,7 +21,9 @@ class CPU:
             1: self.HLT,
             130: self.LDI,
             71: self.PRN,
-            162: self.MUL # 10100010
+            162: self.MUL, # 10100010
+            69: self.PUSH,
+            70: self.POP
         }
 
     def load(self):
@@ -67,6 +70,9 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -99,20 +105,28 @@ class CPU:
             opa = self.ram_read(self.pc + 1)
             opb = self.ram_read(self.pc + 2)
 
-            self.func_dict[ir](opa,opb=None)
+            self.func_dict[ir](opa,opb)
 
     def ram_read(self,address):
         self.content = self.ram[address] # Memory Data Register (MDR) = Memory Address Register (MAR)
         return self.content
 
-
-
     def ram_write(self,address,data):
         self.ram[address] = data
         self.ram_read(address)
 
+    def PUSH(self,a,b):
+        self.register[self.sp] -= 1
+        self.ram_write(self.register[self.sp],self.register[a])
+        self.pc += 2
 
-    def HLT(self):
+    def POP(self,a,b):
+        data = self.ram_read(self.register[self.sp])
+        self.register[a] = data
+        self.register[self.sp] += 1
+        self.pc += 2
+
+    def HLT(self,a,b):
         print('GoodBye')
         self.status = False
 
@@ -122,11 +136,11 @@ class CPU:
         self.pc += 3
 
     def PRN(self,a,b):
-        value = register[a]
-        print(int(value,10))
+        value = self.register[a]
+        print(int(value))
         self.pc += 2
 
     def MUL(self,a,b):
-        value = a * b
-        print(f'MUL = {value}')
-        self.pc += 2
+        print(a,b)
+        self.alu('MUL',a,b)
+        self.pc += 3
