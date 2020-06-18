@@ -144,3 +144,9 @@ class CPU:
         print(a,b)
         self.alu('MUL',a,b)
         self.pc += 3
+
+    def CALL(self,a,b):
+        pass
+
+    def RET(self,a,b):
+        self.pop()
