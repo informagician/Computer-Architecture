@@ -8,11 +8,11 @@ class CPU:
     def __init__(self):
         """Construct a new CPU."""
         self.ram = [0] * 256
-        self.register = [0] * 8
+        self.reg = [0] * 8
         self.sp = 7 # SP Stack Pointer
-        # self.register[sp] = 0x4F
-        # self.register[6] =  # IS Interrupt Status
-        # self.register[5] =  # IM Interrupt Mask
+        # self.reg[sp] = 0x4F
+        # self.reg[6] =  # IS Interrupt Status
+        # self.reg[5] =  # IM Interrupt Mask
         self.pc = 0
         self.fl = 0
         self.status = False
@@ -23,7 +23,10 @@ class CPU:
             71: self.PRN,
             162: self.MUL, # 10100010
             69: self.PUSH,
-            70: self.POP
+            70: self.POP,
+            80: self.CALL,
+            17: self.RET,
+            160: self.ADD
         }
 
     def load(self):
@@ -116,14 +119,14 @@ class CPU:
         self.ram_read(address)
 
     def PUSH(self,a,b):
-        self.register[self.sp] -= 1
-        self.ram_write(self.register[self.sp],self.register[a])
+        self.reg[self.sp] -= 1
+        self.ram_write(self.reg[self.sp],self.reg[a])
         self.pc += 2
 
     def POP(self,a,b):
-        data = self.ram_read(self.register[self.sp])
-        self.register[a] = data
-        self.register[self.sp] += 1
+        data = self.ram_read(self.reg[self.sp])
+        self.reg[a] = data
+        self.reg[self.sp] += 1
         self.pc += 2
 
     def HLT(self,a,b):
@@ -131,12 +134,12 @@ class CPU:
         self.status = False
 
     def LDI(self, a, b):
-        self.register[a] = b
+        self.reg[a] = b
         print(f'LDI - register {a} is {b}')
         self.pc += 3
 
     def PRN(self,a,b):
-        value = self.register[a]
+        value = self.reg[a]
         print(int(value))
         self.pc += 2
 
@@ -146,7 +149,15 @@ class CPU:
         self.pc += 3
 
     def CALL(self,a,b):
-        pass
+        self.reg[self.sp] -= 1
+        self.ram_write(self.reg[self.sp],self.pc + 2)
+        self.pc = self.reg[a]
 
     def RET(self,a,b):
-        self.pop()
+        self.pc = self.ram_read(self.reg[self.sp])
+        self.reg[self.sp] += 1
+    
+    def ADD(self,a,b):
+        print(f'ADDING {a} to {b}')
+        self.alu("ADD",a,b)
+        self.pc += 3
