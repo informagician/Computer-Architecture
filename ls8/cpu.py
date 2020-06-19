@@ -80,21 +80,26 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
-        elif op == "CMP":
-            if self.reg[reg_a] == self.reg[reg_b]:
-                self.reg[self.fl] = self.reg[self.fl] | 0b00000001
-            else:
-                self.reg[self.fl] = self.reg[self.fl] & 0b11111110
+        elif op == "CMP": #LGE
 
-            if self.reg[reg_a] > self.reg[reg_b]:
-                self.reg[self.fl] = self.reg[self.fl] | 0b00000010
-            else:
-                self.reg[self.fl] = self.reg[self.fl] & 0b11111101
-            
+            # LESS THAN
             if self.reg[reg_a] < self.reg[reg_b]:
                 self.reg[self.fl] = self.reg[self.fl] | 0b00000100
             else:
                 self.reg[self.fl] = self.reg[self.fl] & 0b11111011
+            
+            # GREATER THAN
+            if self.reg[reg_a] > self.reg[reg_b]:
+                self.reg[self.fl] = self.reg[self.fl] | 0b00000010
+            else:
+                self.reg[self.fl] = self.reg[self.fl] & 0b11111101
+
+            # EQUAL
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.reg[self.fl] = self.reg[self.fl] | 0b00000001
+            else:
+                self.reg[self.fl] = self.reg[self.fl] & 0b11111110
+            
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -149,12 +154,12 @@ class CPU:
         self.pc += 2
 
     def HLT(self,a,b):
-        print('GoodBye')
+        # print('GoodBye')
         self.status = False
 
     def LDI(self, a, b):
         self.reg[a] = b
-        print(f'LDI - register {a} is {b}')
+        # print(f'LDI - register {a} is {b}')
         self.pc += 3
 
     def PRN(self,a,b):
@@ -163,7 +168,7 @@ class CPU:
         self.pc += 2
 
     def MUL(self,a,b):
-        print(a,b)
+        # print(a,b)
         self.alu('MUL',a,b)
         self.pc += 3
 
@@ -177,12 +182,12 @@ class CPU:
         self.reg[self.sp] += 1
     
     def ADD(self,a,b):
-        print(f'ADDING {a} to {b}')
+        # print(f'ADDING {a} to {b}')
         self.alu("ADD",a,b)
         self.pc += 3
 
     def CMP(self,a,b):
-        print(f'COMPARING {a} and {b}')
+        # print(f'COMPARING {a} and {b}')
         self.alu("CMP",a,b)
         self.pc += 3
 
@@ -190,13 +195,13 @@ class CPU:
         self.pc = self.reg[a]
 
     def JEQ(self,a,b):
-        if self.fl % 2 == 1:
-            self.JMP(a,b)
+        if (self.reg[self.fl] & 0b11111111) == 1:
+            self.pc = self.reg[a]
         else:
             self.pc += 2
 
     def JNE(self,a,b):
-        if self.fl % 2 == 0:
-            self.JMP(a,b)
+        if (self.reg[self.fl] & 0b11111110) == self.reg[self.fl]:
+            self.pc = self.reg[a]
         else:
             self.pc += 2
