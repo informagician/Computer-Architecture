@@ -14,7 +14,7 @@ class CPU:
         # self.reg[6] =  # IS Interrupt Status
         # self.reg[5] =  # IM Interrupt Mask
         self.pc = 0
-        self.fl = 0
+        self.fl = 4
         self.reg[self.fl] = 0b00000000
         self.status = False
 
@@ -80,23 +80,32 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+
+
         elif op == "CMP": #LGE
 
             # LESS THAN
             if self.reg[reg_a] < self.reg[reg_b]:
+                print(f'{self.reg[reg_a]} & {self.reg[reg_b]}')
+                print(f'{self.reg[reg_a]} is less than {self.reg[reg_b]}')
                 self.reg[self.fl] = self.reg[self.fl] | 0b00000100
+                print(f'FLAG is set to {(self.reg[self.fl])}')
             else:
                 self.reg[self.fl] = self.reg[self.fl] & 0b11111011
             
             # GREATER THAN
             if self.reg[reg_a] > self.reg[reg_b]:
                 self.reg[self.fl] = self.reg[self.fl] | 0b00000010
+                print(f'{self.reg[reg_a]} is greater than {self.reg[reg_b]}')
+                print(f'FLAG is set to {self.reg[self.fl]}')
             else:
                 self.reg[self.fl] = self.reg[self.fl] & 0b11111101
 
             # EQUAL
             if self.reg[reg_a] == self.reg[reg_b]:
                 self.reg[self.fl] = self.reg[self.fl] | 0b00000001
+                print(f'{self.reg[reg_a]} is equal to {self.reg[reg_b]}')
+                print(f'FLAG is set to {self.reg[self.fl]}')
             else:
                 self.reg[self.fl] = self.reg[self.fl] & 0b11111110
             
@@ -159,7 +168,7 @@ class CPU:
 
     def LDI(self, a, b):
         self.reg[a] = b
-        # print(f'LDI - register {a} is {b}')
+        print(f'LDI - register {a} is {b}')
         self.pc += 3
 
     def PRN(self,a,b):
@@ -187,21 +196,24 @@ class CPU:
         self.pc += 3
 
     def CMP(self,a,b):
-        # print(f'COMPARING {a} and {b}')
+        print(f'COMPARING {self.reg[a]} and {self.reg[b]}')
         self.alu("CMP",a,b)
         self.pc += 3
 
     def JMP(self,a,b):
         self.pc = self.reg[a]
+        print(f'JMP to {self.reg[a]}')
 
     def JEQ(self,a,b):
-        if (self.reg[self.fl] & 0b11111111) == 1:
+        if (self.reg[self.fl] & 0b00000001) == 1:
             self.pc = self.reg[a]
+            print(f'JEQ to {a}')
         else:
             self.pc += 2
 
     def JNE(self,a,b):
         if (self.reg[self.fl] & 0b11111110) == self.reg[self.fl]:
             self.pc = self.reg[a]
+            print(f'JNE to {a}')
         else:
             self.pc += 2
