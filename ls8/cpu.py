@@ -15,6 +15,7 @@ class CPU:
         # self.reg[5] =  # IM Interrupt Mask
         self.pc = 0
         self.fl = 0
+        self.reg[self.fl] = 0b00000000
         self.status = False
 
         self.func_dict = {
@@ -26,7 +27,11 @@ class CPU:
             70: self.POP,
             80: self.CALL,
             17: self.RET,
-            160: self.ADD
+            160: self.ADD,
+            167: self.CMP, # 10100111
+            84: self.JMP, # 01010100 4+16+64
+            85: self.JEQ, # 01010101 1+4+16+64
+            86: self.JNE # 01010110 2+4+16+64
         }
 
     def load(self):
@@ -75,7 +80,13 @@ class CPU:
         #elif op == "SUB": etc
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
-
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 0b00000001
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                self.fl = 0b00000100
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -161,3 +172,23 @@ class CPU:
         print(f'ADDING {a} to {b}')
         self.alu("ADD",a,b)
         self.pc += 3
+
+    def CMP(self,a,b):
+        print(f'COMPARING {a} and {b}')
+        self.alu("CMP",a,b)
+        self.pc += 3
+
+    def JMP(self,a,b):
+        self.pc = self.reg[a]
+
+    def JEQ(self,a,b):
+        if self.fl % 2 == 1:
+            self.JMP(a,b)
+        else:
+            self.pc += 2
+
+    def JNE(self,a,b):
+        if self.fl % 2 == 0:
+            self.JMP(a,b)
+        else:
+            self.pc += 2
